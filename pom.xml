@@ -19,20 +19,19 @@
     <name>propiedades-api</name>
     <description>Sistema de bienes raíces - backend REST</description>
 
-    <!-- SOLO UNA SECCION <properties> -->
     <properties>
         <java.version>17</java.version>
 
-        <!-- Para que no se rompan acentos / ñ -->
+        <!-- evitar problemas de acentos/ñ -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <!-- Usaremos esta versión de Lombok en el compiler plugin -->
+        <!-- versión fija de lombok -->
         <lombok.version>1.18.32</lombok.version>
     </properties>
 
     <dependencies>
-        <!-- Actuator (healthcheck /actuator/health) -->
+        <!-- Actuator (/actuator/health) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -63,7 +62,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Lombok (getters/setters automáticos) -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -88,14 +87,10 @@
 
     <build>
 
-        <!-- 👇 ESTO evita el error "Failed to execute mojo ... maven-resources-plugin" -->
+        <!-- resources sin filtrado (para que ${...} en .properties no rompa) -->
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <!-- Muy importante:
-                     No intentes reemplazar ${PORT:8086} dentro de application.properties.
-                     Esto soluciona el fallo del plugin maven-resources-plugin.
-                -->
                 <filtering>false</filtering>
             </resource>
         </resources>
@@ -106,14 +101,14 @@
                 <filtering>false</filtering>
             </testResource>
         </testResources>
-        <!-- ☝️ con esto ya no se quiebra Maven por las variables ${...} -->
 
         <plugins>
 
-            <!-- Compilar con Java 17 + que Lombok funcione bien -->
+            <!-- Compilar con Java 17 (versión explícita del plugin) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -127,17 +122,31 @@
                 </configuration>
             </plugin>
 
-            <!-- Spring Boot plugin: genera el .jar ejecutable para Railway -->
+            <!-- Spring Boot plugin: genera el .jar ejecutable -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.2.5</version>
                 <configuration>
+                    <!-- Ajusta este nombre si tu clase main tiene otro paquete -->
+                    <mainClass>com.bienesraices.api.PropiedadesApiApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- resources plugin con versión fija (algunos buildpacks lo piden explícito) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <useDefaultDelimiters>true</useDefaultDelimiters>
                 </configuration>
             </plugin>
 
